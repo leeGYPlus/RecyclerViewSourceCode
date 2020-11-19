@@ -26,6 +26,10 @@ import java.util.List;
 
 /**
  * Helper class that can enqueue and process adapter update operations.
+ *
+ * 对 Adapter 的更新操作进行入队和处理的帮助类。
+ *
+ *
  * <p>
  * To support animations, RecyclerView presents an older version the Adapter to best represent
  * previous state of the layout. Sometimes, this is not trivial when items are removed that were

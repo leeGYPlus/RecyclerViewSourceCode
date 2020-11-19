@@ -1206,10 +1206,10 @@ public class RecyclerView extends ViewGroup implements ScrollingView,
     }
 
     /**
-     * Removes and recycles all views - both those currently attached, and those in the Recycler.
+     * Removes and recycles all views - both those currently attached, and those in the Recycler. 移除和回收所有的 View(当前 attach 的 View 和在 Recycer 中的 View)
      */
     void removeAndRecycleViews() {
-        // end all running animations
+        // end all running animations 结束所有正在执行的动画
         if (mItemAnimator != null) {
             mItemAnimator.endAnimations();
         }
@@ -1228,13 +1228,16 @@ public class RecyclerView extends ViewGroup implements ScrollingView,
     /**
      * Replaces the current adapter with the new one and triggers listeners.
      *
+     *
+     *
      * @param adapter                The new adapter
-     * @param compatibleWithPrevious If true, the new adapter is using the same View Holders and
+     * @param compatibleWithPrevious(是否与之前兼容) If true, the new adapter is using the same View Holders and
      *                               item types with the current adapter (helps us avoid cache
-     *                               invalidation).
+     *                               invalidation). 如果 true，表明兼容之前，那么新的 Adapter 会使用当前的 ViewHolder 和 ItemView 的类型，可以避免重绘
      * @param removeAndRecycleViews  If true, we'll remove and recycle all existing views. If
      *                               compatibleWithPrevious is false, this parameter is ignored.
      */
+    // TODO: 2020/11/19 1. 使用新的 Adapter 替代当前的 Adapter，并且触发监听
     private void setAdapterInternal(@Nullable Adapter adapter, boolean compatibleWithPrevious,
             boolean removeAndRecycleViews) {
         if (mAdapter != null) {
@@ -3671,6 +3674,7 @@ public class RecyclerView extends ViewGroup implements ScrollingView,
      * @param widthSpec
      * @param heightSpec
      */
+    // TODO: 2020/11/19 3. 开始测量
     @Override
     protected void onMeasure(int widthSpec, int heightSpec) {
         if (mLayout == null) {
@@ -4241,6 +4245,7 @@ public class RecyclerView extends ViewGroup implements ScrollingView,
 
         if (mState.mRunSimpleAnimations) {
             // Step 0: Find out where all non-removed items are, pre-layout
+            // 第 0 步：寻找所有没有被移除的 ItemView，提前布局
             int count = mChildHelper.getChildCount();
             for (int i = 0; i < count; ++i) {
                 final ViewHolder holder = getChildViewHolderInt(mChildHelper.getChildAt(i));
@@ -4262,6 +4267,8 @@ public class RecyclerView extends ViewGroup implements ScrollingView,
                     //    * Layout manager decides to layout the item in the pre-Layout pass (step1)
                     // When this case is detected, RV will un-hide that view and add to the old
                     // change holders list.
+
+
                     mViewInfoStore.addToOldChangeHolders(key, holder);
                 }
             }
@@ -4875,11 +4882,13 @@ public class RecyclerView extends ViewGroup implements ScrollingView,
     }
 
     /**
-     * Processes the fact that, as far as we can tell, the data set has completely changed.
+     * Processes the fact that, as far as we can tell, the data set has completely changed.\
+     *
+     * 告知数源据发生改变
      *
      * <ul>
-     *   <li>Once layout occurs, all attached items should be discarded or animated.
-     *   <li>Attached items are labeled as invalid.
+     *   <li>Once layout occurs, all attached items should be discarded or animated. 一旦进行布局，那么所有关联的的 itemview 会被丢弃并进行动画。
+     *   <li>Attached items are labeled as invalid. 所有关联的 item 被标记为不可用。
      *   <li>Because items may still be prefetched between a "data set completely changed"
      *       event and a layout event, all cached items are discarded.
      * </ul>
@@ -7015,6 +7024,7 @@ public class RecyclerView extends ViewGroup implements ScrollingView,
          * @param newAdapter
          * @param compatibleWithPrevious
          */
+        // TODO: 2020/11/19 2.使用 Recycler 触发 Adapter 改变后的页面刷新
         void onAdapterChanged(Adapter oldAdapter, Adapter newAdapter,
                 boolean compatibleWithPrevious) {
             clear();
@@ -7219,6 +7229,8 @@ public class RecyclerView extends ViewGroup implements ScrollingView,
      *
      * <p>Adapters provide a binding from an app-specific data set to views that are displayed
      * within a {@link RecyclerView}.</p>
+     *
+     * Adapter 的作用：将特定的数据集合转换为 RecyclerView 显示的 ItemView
      *
      * @param <VH> A class that extends ViewHolder that will be used by the adapter.
      */
@@ -9255,7 +9267,7 @@ public class RecyclerView extends ViewGroup implements ScrollingView,
         }
 
         /**
-         * Remove a child view and recycle it using the given Recycler.
+         * Remove a child view and recycle it using the given Recycler. 对于 RV 中的单个 ItemView 的移除，并使用 Recycler 回收该 ItemView
          *
          * @param index    Index of child to remove and recycle
          * @param recycler Recycler to use to recycle child
@@ -10373,6 +10385,11 @@ public class RecyclerView extends ViewGroup implements ScrollingView,
          * opportunity to clear caches and configure state such that it can relayout appropriately
          * with the new data and potentially new view types.
          *
+         * 如果 RV 对应的 LayoutManager 绑定的 Adapter 发生改变，那么该方法会被调用。
+         *
+         * LayoutManger 可能借此机会清除缓存和配置状态，以便可以使用新数据和潜在的新视图类型再次布局。
+         *
+         *
          * <p>The default implementation removes all currently attached views.</p>
          *
          * @param oldAdapter The previous adapter instance. Will be null if there was previously no
@@ -10559,6 +10576,9 @@ public class RecyclerView extends ViewGroup implements ScrollingView,
         /**
          * Measure the attached RecyclerView. Implementations must call
          * {@link #setMeasuredDimension(int, int)} before returning.
+         *
+         * 测量相关的 RV，必须调用 setMeasuredDimension 方法
+         *
          * <p>
          * It is strongly advised to use the AutoMeasure mechanism by overriding
          * {@link #isAutoMeasureEnabled()} to return true as AutoMeasure handles all the standard
@@ -10660,9 +10680,9 @@ public class RecyclerView extends ViewGroup implements ScrollingView,
         }
 
         /**
-         * Removes all views and recycles them using the given recycler.
+         * Removes all views and recycles them using the given recycler. 移除和回收 Recycler 中所有的 ItemView
          * <p>
-         * If you want to clean cached views as well, you should call {@link Recycler#clear()} too.
+         * If you want to clean cached views as well, you should call {@link Recycler#clear()} too. 如果想要清除缓存中的 View ，需要执行 clear 方法
          * <p>
          * If a View is marked as "ignored", it is not removed nor recycled.
          *
@@ -11259,8 +11279,13 @@ public class RecyclerView extends ViewGroup implements ScrollingView,
     /**
      * A ViewHolder describes an item view and metadata about its place within the RecyclerView.
      *
+     * ViewHolder 描述的是 RV 中某个位置处 ItemView 和数据的对应关系
+     *
+     *
      * <p>{@link Adapter} implementations should subclass ViewHolder and add fields for caching
      * potentially expensive {@link View#findViewById(int)} results.</p>
+     *
+     * Adapter 实现类应该在内部实现继承 ViewHolder 的类 ，用来避免潜在的 findViewById 带来的性能损耗。
      *
      * <p>While {@link LayoutParams} belong to the {@link LayoutManager},
      * {@link ViewHolder ViewHolders} belong to the adapter. Adapters should feel free to use
@@ -11268,6 +11293,13 @@ public class RecyclerView extends ViewGroup implements ScrollingView,
      * easier. Implementations should assume that individual item views will hold strong references
      * to <code>ViewHolder</code> objects and that <code>RecyclerView</code> instances may hold
      * strong references to extra off-screen item views for caching purposes</p>
+     *
+     *  LayoutParams 属于 LayoutManager，而 ViewHolder属于适配器。
+     *  Adapter 应该随意使用自己的自定义 ViewHolder 实现来存储数据，使绑定视图内容的过程更容易。
+     *
+     *  ViewHolder 实现类应假定 每个 ItemView 将拥有对 ViewHolder 对象的强引用，
+     *  并且 RecyclerView 实例可能具有对额外的屏幕外 ItemView 的强引用以进行缓存。
+     *
      */
     public abstract static class ViewHolder {
         @NonNull
@@ -11280,6 +11312,7 @@ public class RecyclerView extends ViewGroup implements ScrollingView,
         int mPreLayoutPosition = NO_POSITION;
 
         // The item that this holder is shadowing during an item change event/animation
+
         ViewHolder mShadowedHolder = null;
         // The item that is shadowing this holder during an item change event/animation
         ViewHolder mShadowingHolder = null;
@@ -12815,13 +12848,18 @@ public class RecyclerView extends ViewGroup implements ScrollingView,
      * position or view focus. State object can also keep arbitrary data, identified by resource
      * ids.</p>
      *
-     * 保存当前 RV 一些有用的信息，比如滑动的位置、view 的焦点。
+     * 保存当前 RV 一些有用的信息，比如滑动的位置、view 的焦点。State 会保存被资源 id 标识的任意数据。
      *
      * <p>Often times, RecyclerView components will need to pass information between each other.
      * To provide a well defined data bus between components, RecyclerView passes the same State
      * object to component callbacks and these components can use it to exchange data.</p>
      * <p>If you implement custom components, you can use State's put/get/remove methods to pass
      * data between your components without needing to manage their lifecycles.</p>
+     *
+     *
+     * 通常，RecyclerView 组件需要相互传递信息。
+     * 为了在组件之间提供定义良好的数据总线，RecyclerView 将同一状态对象传递到组件回调，这些组件可以使用它来交换数据。
+     * 如果实现自定义组件，可以使用 State 的 put/get/remove 方法来传递RecyclerView组件之间的数据，无需管理其生命周期。
      */
     public static class State {
         static final int STEP_START = 1;

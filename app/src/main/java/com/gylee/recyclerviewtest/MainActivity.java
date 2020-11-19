@@ -1,6 +1,5 @@
 package com.gylee.recyclerviewtest;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -8,7 +7,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 
 public class MainActivity extends AppCompatActivity {
@@ -30,6 +28,7 @@ public class MainActivity extends AppCompatActivity {
                 recyclerView.setAdapter(adapter);
             }
         });
+//        adapter.notifyDataSetChanged();
 
     }
 }
