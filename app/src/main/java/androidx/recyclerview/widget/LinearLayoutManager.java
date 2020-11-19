@@ -524,6 +524,7 @@ public class LinearLayoutManager extends RecyclerView.LayoutManager implements
 
     /**
      * {@inheritDoc}
+     * 布局 itemView
      */
     @Override
     public void onLayoutChildren(RecyclerView.Recycler recycler, RecyclerView.State state) {
@@ -640,6 +641,7 @@ public class LinearLayoutManager extends RecyclerView.LayoutManager implements
             // fill towards start
             updateLayoutStateToFillStart(mAnchorInfo);
             mLayoutState.mExtraFillSpace = extraForStart;
+            // TODO: 2020/10/25 bindStep(P)
             fill(recycler, mLayoutState, state, false);
             startOffset = mLayoutState.mOffset;
             final int firstElement = mLayoutState.mCurrentPosition;
@@ -1564,8 +1566,12 @@ public class LinearLayoutManager extends RecyclerView.LayoutManager implements
      * independent from the rest of the {@link LinearLayoutManager}
      * and with little change, can be made publicly available as a helper class.
      *
-     * @param recycler        Current recycler that is attached to RecyclerView
-     * @param layoutState     Configuration on how we should fill out the available space.
+     * 填充给定的 Layout
+     *
+     * 很多方法都会调用 fill，用来填充布局
+     *
+     * @param recycler        Current recycler that is attached to RecyclerView 当前 RV 对应的 Recycler
+     * @param layoutState     Configuration on how we should fill out the available space. 配置如何填充可用的空间
      * @param state           Context passed by the RecyclerView to control scroll steps.
      * @param stopOnFocusable If true, filling stops in the first focusable new child
      * @return Number of pixels that it added. Useful for scroll functions.
@@ -1588,6 +1594,8 @@ public class LinearLayoutManager extends RecyclerView.LayoutManager implements
             if (RecyclerView.VERBOSE_TRACING) {
                 TraceCompat.beginSection("LLM LayoutChunk");
             }
+            // TODO: 2020/10/25 createVH(Q)
+            // TODO: 2020/10/25 bindVH(Q)
             layoutChunk(recycler, state, layoutState, layoutChunkResult);
             if (RecyclerView.VERBOSE_TRACING) {
                 TraceCompat.endSection();
@@ -1626,8 +1634,18 @@ public class LinearLayoutManager extends RecyclerView.LayoutManager implements
         return start - layoutState.mAvailable;
     }
 
+    /**
+     * 布局 itemView
+     *
+     * @param recycler
+     * @param state
+     * @param layoutState
+     * @param result
+     */
     void layoutChunk(RecyclerView.Recycler recycler, RecyclerView.State state,
             LayoutState layoutState, LayoutChunkResult result) {
+        // TODO: 2020/10/25 createVH(R)
+        // TODO: 2020/10/25 bindVH(R)
         View view = layoutState.next(recycler);
         if (view == null) {
             if (DEBUG && layoutState.mScrapList == null) {
@@ -1642,6 +1660,7 @@ public class LinearLayoutManager extends RecyclerView.LayoutManager implements
         if (layoutState.mScrapList == null) {
             if (mShouldReverseLayout == (layoutState.mLayoutDirection
                     == LayoutState.LAYOUT_START)) {
+                // 添加 View
                 addView(view);
             } else {
                 addView(view, 0);
@@ -2324,9 +2343,12 @@ public class LinearLayoutManager extends RecyclerView.LayoutManager implements
          * @return The next element that we should layout.
          */
         View next(RecyclerView.Recycler recycler) {
+            // 在 scrapList 复用的 VH 不会调用 onBindViewHolder
             if (mScrapList != null) {
                 return nextViewFromScrapList();
             }
+            // TODO: 2020/10/25 createVH(S)
+            // TODO: 2020/10/25 bindVH(S)
             final View view = recycler.getViewForPosition(mCurrentPosition);
             mCurrentPosition += mItemDirection;
             return view;
@@ -2348,6 +2370,7 @@ public class LinearLayoutManager extends RecyclerView.LayoutManager implements
                 if (lp.isItemRemoved()) {
                     continue;
                 }
+                // 以 position 为寻找 itemView 的标准
                 if (mCurrentPosition == lp.getViewLayoutPosition()) {
                     assignPositionFromScrapList(view);
                     return view;

@@ -378,6 +378,8 @@ public class RecyclerView extends ViewGroup implements ScrollingView,
 
     /**
      * Handles abstraction between LayoutManager children and RecyclerView children
+     *
+     * 處理LayoutManager children 和RecyclerView children 之間的抽象关系
      */
     ChildHelper mChildHelper;
 
@@ -1082,14 +1084,21 @@ public class RecyclerView extends ViewGroup implements ScrollingView,
 
     /**
      * RecyclerView can perform several optimizations if it can know in advance that RecyclerView's
-     * size is not affected by the adapter contents. RecyclerView can still change its size based
+     * size is not affected by the adapter contents.
+     *
+     * RecyclerView 如何能够提前知道 Items 的大小，而不是受 adapter 的影响，基于此 RV 可以进行一些优化。
+     *
+     *
+     * RecyclerView can still change its size based
      * on other factors (e.g. its parent's size) but this size calculation cannot depend on the
      * size of its children or contents of its adapter (except the number of items in the adapter).
+     *
+     * 还有一些其他因素会影响 RV 的大小，但是大小的计算不是依靠 RV 的 子 View 或者 Adapter 的内容。
      * <p>
      * If your use of RecyclerView falls into this category, set this to {@code true}. It will allow
      * RecyclerView to avoid invalidating the whole layout when its adapter contents change.
      *
-     * @param hasFixedSize true if adapter changes cannot affect the size of the RecyclerView.
+     * @param hasFixedSize true if adapter changes cannot affect the size of the RecyclerView.  Adapter 不影响 RV 的大小，返回 true
      */
     public void setHasFixedSize(boolean hasFixedSize) {
         mHasFixedSize = hasFixedSize;
@@ -1239,12 +1248,15 @@ public class RecyclerView extends ViewGroup implements ScrollingView,
         final Adapter oldAdapter = mAdapter;
         mAdapter = adapter;
         if (adapter != null) {
+            // 注册 adpater 数据改变的观察者
             adapter.registerAdapterDataObserver(mObserver);
+            // 关联 RecyclerView 和 Adapter
             adapter.onAttachedToRecyclerView(this);
         }
         if (mLayout != null) {
             mLayout.onAdapterChanged(oldAdapter, mAdapter);
         }
+        // 告诉 Recycler Adapter 更新
         mRecycler.onAdapterChanged(oldAdapter, mAdapter, compatibleWithPrevious);
         mState.mStructureChanged = true;
     }
@@ -2257,6 +2269,9 @@ public class RecyclerView extends ViewGroup implements ScrollingView,
      * This method should be called before any code that may trigger a child view to cause a call to
      * {@link RecyclerView#requestLayout()}.  Doing so enables {@link RecyclerView} to avoid
      * reacting to additional redundant calls to {@link #requestLayout()}.
+     *
+     * 务必保证在 requestLayout 执行前调用该方法，这样做可以避免 RV 执行多余的 requestLayout
+     *
      * <p>
      * A call to this method must always be accompanied by a call to
      * {@link #stopInterceptRequestLayout(boolean)} that follows the code that may trigger a
@@ -3649,12 +3664,21 @@ public class RecyclerView extends ViewGroup implements ScrollingView,
         return false;
     }
 
+    /**
+     *
+     * 开始测量
+     *
+     * @param widthSpec
+     * @param heightSpec
+     */
     @Override
     protected void onMeasure(int widthSpec, int heightSpec) {
         if (mLayout == null) {
+            // 没有设定 LayoutManger，那么默认测量
             defaultOnMeasure(widthSpec, heightSpec);
             return;
         }
+        // LinearLayoutManager 为 true
         if (mLayout.isAutoMeasureEnabled()) {
             final int widthMode = MeasureSpec.getMode(widthSpec);
             final int heightMode = MeasureSpec.getMode(heightSpec);
@@ -3707,7 +3731,7 @@ public class RecyclerView extends ViewGroup implements ScrollingView,
                 mLayout.onMeasure(mRecycler, mState, widthSpec, heightSpec);
                 return;
             }
-            // custom onMeasure
+            // custom onMeasure 在测量过程中 Adapter 更新
             if (mAdapterUpdateDuringMeasure) {
                 startInterceptRequestLayout();
                 onEnterLayoutOrScroll();
@@ -3738,6 +3762,7 @@ public class RecyclerView extends ViewGroup implements ScrollingView,
             } else {
                 mState.mItemCount = 0;
             }
+            //
             startInterceptRequestLayout();
             mLayout.onMeasure(mRecycler, mState, widthSpec, heightSpec);
             stopInterceptRequestLayout(false);
@@ -6104,8 +6129,10 @@ public class RecyclerView extends ViewGroup implements ScrollingView,
         static final int DEFAULT_CACHE_SIZE = 2;
 
         /**
-         * Clear scrap views out of this recycler. Detached views contained within a
-         * recycled view pool will remain.
+         * Clear scrap views out of this recycler. Detached views contained within a recycled view pool will remain.
+         *
+         * scrapView 会被清除，回收視圖池中包含的分離視圖將保留。recyclerview pool 中 ViewHolder 的 itemView 会被保留下来。
+         *
          */
         public void clear() {
             mAttachedScrap.clear();
@@ -6201,6 +6228,7 @@ public class RecyclerView extends ViewGroup implements ScrollingView,
                 // abort - we have a deadline we can't meet
                 return false;
             }
+            // TODO: 2020/10/25 bindVH(W)
             mAdapter.bindViewHolder(holder, offsetPosition);
             long endBindNs = getNanoTime();
             mRecyclerPool.factorInBindTime(holder.getItemViewType(), endBindNs - startBindNs);
@@ -6303,16 +6331,22 @@ public class RecyclerView extends ViewGroup implements ScrollingView,
          */
         @NonNull
         public View getViewForPosition(int position) {
+            // TODO: 2020/10/25 createVH(T)
+            // TODO: 2020/10/25 bindVH(T)
             return getViewForPosition(position, false);
         }
 
         View getViewForPosition(int position, boolean dryRun) {
+            // TODO: 2020/10/25 createVH(U) : 从 Recycler 中获取 VH 对应的 itemView
+            // TODO: 2020/10/25 bindVH(U)
             return tryGetViewHolderForPositionByDeadline(position, dryRun, FOREVER_NS).itemView;
         }
 
         /**
          * Attempts to get the ViewHolder for the given position, either from the Recycler scrap,
          * cache, the RecycledViewPool, or creating it directly.
+         *
+         * 从 Recycler 中获得指定 position 的 VH
          * <p>
          * If a deadlineNs other than {@link #FOREVER_NS} is passed, this method early return
          * rather than constructing or binding a ViewHolder if it doesn't think it has time.
@@ -6423,6 +6457,7 @@ public class RecyclerView extends ViewGroup implements ScrollingView,
                         // abort - we have a deadline we can't meet
                         return null;
                     }
+                    // TODO: 2020/10/25 createVH(X)
                     holder = mAdapter.createViewHolder(RecyclerView.this, type);
                     if (ALLOW_THREAD_GAP_WORK) {
                         // only bother finding nested RV if prefetching
@@ -6467,6 +6502,7 @@ public class RecyclerView extends ViewGroup implements ScrollingView,
                             + exceptionLabel());
                 }
                 final int offsetPosition = mAdapterHelper.findPositionOffset(position);
+                // TODO: 2020/10/25 bindVH(V)
                 bound = tryBindViewHolderByDeadline(holder, offsetPosition, position, deadlineNs);
             }
 
@@ -6972,6 +7008,13 @@ public class RecyclerView extends ViewGroup implements ScrollingView,
             if (DEBUG) Log.d(TAG, "dispatchViewRecycled: " + holder);
         }
 
+        /**
+         * RV 通知 Recycler Adapter 发生了改变，那么需要清除旧的 adapter，使用新的 adapter
+         *
+         * @param oldAdapter
+         * @param newAdapter
+         * @param compatibleWithPrevious
+         */
         void onAdapterChanged(Adapter oldAdapter, Adapter newAdapter,
                 boolean compatibleWithPrevious) {
             clear();
@@ -7204,6 +7247,7 @@ public class RecyclerView extends ViewGroup implements ScrollingView,
          * @see #getItemViewType(int)
          * @see #onBindViewHolder(ViewHolder, int)
          */
+        // TODO: 2020/10/25 createV(Z) 需要子 Adapter 实现
         @NonNull
         public abstract VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType);
 
@@ -7227,6 +7271,7 @@ public class RecyclerView extends ViewGroup implements ScrollingView,
          *                 item at the given position in the data set.
          * @param position The position of the item within the adapter's data set.
          */
+        // TODO: 2020/10/25 bindStep(Z) 需要子 Adapter 实现
         public abstract void onBindViewHolder(@NonNull VH holder, int position);
 
         /**
@@ -7260,6 +7305,7 @@ public class RecyclerView extends ViewGroup implements ScrollingView,
          */
         public void onBindViewHolder(@NonNull VH holder, int position,
                 @NonNull List<Object> payloads) {
+            // TODO: 2020/10/25 bindVH(Y)
             onBindViewHolder(holder, position);
         }
 
@@ -7298,6 +7344,7 @@ public class RecyclerView extends ViewGroup implements ScrollingView,
         public final VH createViewHolder(@NonNull ViewGroup parent, int viewType) {
             try {
                 TraceCompat.beginSection(TRACE_CREATE_VIEW_TAG);
+                // TODO: 2020/10/25 createVH(Y)
                 final VH holder = onCreateViewHolder(parent, viewType);
                 if (holder.itemView.getParent() != null) {
                     throw new IllegalStateException("ViewHolder views must not be attached when"
@@ -7340,6 +7387,7 @@ public class RecyclerView extends ViewGroup implements ScrollingView,
                 TraceCompat.beginSection(TRACE_BIND_VIEW_TAG);
             }
             holder.mBindingAdapter = this;
+            // TODO: 2020/10/25 bindVH(X)
             onBindViewHolder(holder, position, holder.getUnmodifiedPayloads());
             if (rootBind) {
                 holder.clearPayload();
@@ -12766,6 +12814,9 @@ public class RecyclerView extends ViewGroup implements ScrollingView,
      * <p>Contains useful information about the current RecyclerView state like target scroll
      * position or view focus. State object can also keep arbitrary data, identified by resource
      * ids.</p>
+     *
+     * 保存当前 RV 一些有用的信息，比如滑动的位置、view 的焦点。
+     *
      * <p>Often times, RecyclerView components will need to pass information between each other.
      * To provide a well defined data bus between components, RecyclerView passes the same State
      * object to component callbacks and these components can use it to exchange data.</p>
