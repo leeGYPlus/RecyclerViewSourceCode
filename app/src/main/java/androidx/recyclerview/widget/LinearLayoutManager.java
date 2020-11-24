@@ -526,6 +526,7 @@ public class LinearLayoutManager extends RecyclerView.LayoutManager implements
      * {@inheritDoc}
      * 布局 itemView
      */
+    // TODO: 2020/11/23 布局：3
     @Override
     public void onLayoutChildren(RecyclerView.Recycler recycler, RecyclerView.State state) {
         // layout algorithm:
@@ -642,6 +643,7 @@ public class LinearLayoutManager extends RecyclerView.LayoutManager implements
             updateLayoutStateToFillStart(mAnchorInfo);
             mLayoutState.mExtraFillSpace = extraForStart;
             // TODO: 2020/10/25 bindStep(P)
+            // TODO: 2020/11/23 布局：4  会执行 绑定
             fill(recycler, mLayoutState, state, false);
             startOffset = mLayoutState.mOffset;
             final int firstElement = mLayoutState.mCurrentPosition;
@@ -1596,7 +1598,8 @@ public class LinearLayoutManager extends RecyclerView.LayoutManager implements
             }
             // TODO: 2020/10/25 createVH(Q)
             // TODO: 2020/10/25 bindVH(Q)
-            layoutChunk(recycler, state, layoutState, layoutChunkResult);
+            // TODO: 2020/11/23 布局5： createViewHolder or bindViewHolder
+            layoutChunk(recycler, state, layoutState, layoutChunkResult);// 循环调用，每次调用填充一个 ItemView 到 RV
             if (RecyclerView.VERBOSE_TRACING) {
                 TraceCompat.endSection();
             }
@@ -1635,7 +1638,7 @@ public class LinearLayoutManager extends RecyclerView.LayoutManager implements
     }
 
     /**
-     * 布局 itemView
+     * 布局每一个 itemView
      *
      * @param recycler
      * @param state
@@ -1646,6 +1649,7 @@ public class LinearLayoutManager extends RecyclerView.LayoutManager implements
             LayoutState layoutState, LayoutChunkResult result) {
         // TODO: 2020/10/25 createVH(R)
         // TODO: 2020/10/25 bindVH(R)
+        // TODO: 2020/11/23 布局：6 createViewHolder or bindViewHolder
         View view = layoutState.next(recycler);
         if (view == null) {
             if (DEBUG && layoutState.mScrapList == null) {
@@ -2340,6 +2344,10 @@ public class LinearLayoutManager extends RecyclerView.LayoutManager implements
          * Gets the view for the next element that we should layout.
          * Also updates current item index to the next item, based on {@link #mItemDirection}
          *
+         * 获取下一条数据要展示的 View，用来进行接下来的布局过程，同时也会更新当前的 Item 索引
+         *
+         *
+         *
          * @return The next element that we should layout.
          */
         View next(RecyclerView.Recycler recycler) {
@@ -2349,6 +2357,7 @@ public class LinearLayoutManager extends RecyclerView.LayoutManager implements
             }
             // TODO: 2020/10/25 createVH(S)
             // TODO: 2020/10/25 bindVH(S)
+            // TODO: 2020/11/23 布局：7
             final View view = recycler.getViewForPosition(mCurrentPosition);
             mCurrentPosition += mItemDirection;
             return view;
